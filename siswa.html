@@ -12,7 +12,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
 
-  <!-- Top Navigation Bar -->
+  <!-- Header & Navigasi -->
   <nav class="bg-slate-800/80 border-b border-slate-700/80 backdrop-blur sticky top-0 z-40">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -24,7 +24,6 @@
           <p class="text-xs text-slate-400">Portal Anonim Siswa</p>
         </div>
       </div>
-      <!-- User Info Badge & Logout -->
       <div class="flex items-center space-x-3">
         <span id="userBadge" class="bg-slate-900 border border-slate-700 text-indigo-400 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg"></span>
         <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-400 transition">Keluar</button>
@@ -32,10 +31,10 @@
     </div>
   </nav>
 
-  <!-- Main Container -->
+  <!-- Content Container -->
   <main class="max-w-4xl mx-auto px-4 mt-6 space-y-6">
 
-    <!-- Tab Switching -->
+    <!-- Tab Switch -->
     <div class="flex border-b border-slate-700/80 space-x-4">
       <button id="tabForumBtn" onclick="switchMainTab('forum')" class="pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 transition">
         Forum Publik (Threads)
@@ -47,7 +46,6 @@
 
     <!-- SEKTOR 1: FORUM PUBLIK -->
     <section id="sectorForum" class="space-y-6">
-      <!-- Form Buat Thread Baru -->
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg">
         <h2 class="text-sm font-bold text-slate-200">Buat Postingan Baru</h2>
         <textarea id="newThreadPesan" rows="3" placeholder="Tuliskan ide, pertanyaan, atau tanggapanmu secara anonim di sini..." 
@@ -60,20 +58,18 @@
         </div>
       </div>
 
-      <!-- Feed Threads List -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Diskusi Terkini</h3>
           <button onclick="loadThreads()" class="text-xs text-indigo-400 hover:underline">Refresh Data</button>
         </div>
         <div id="threadsContainer" class="space-y-4">
-          <!-- Item Thread akan di-load secara dinamis via JS -->
           <div class="text-center py-8 text-slate-500 text-sm">Memuat thread...</div>
         </div>
       </div>
     </section>
 
-    <!-- SEKTOR 2: KANAL CURHAT BK -->
+    <!-- SEKTOR 2: CURHAT BK -->
     <section id="sectorCurhat" class="hidden space-y-6">
       <div class="bg-slate-800 border border-amber-500/30 rounded-2xl p-4 sm:p-6 space-y-4 shadow-lg">
         <div class="flex items-start space-x-3">
@@ -105,12 +101,12 @@
     const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
     let currentUser = localStorage.getItem('meuratep_anon_user');
 
-    // Cek Sesi Siswa
     if (!currentUser) {
-      window.location.href = 'index.html';
-    } else {
-      document.getElementById('userBadge').innerText = currentUser;
+      // Jika belum ada user ID anonim, generate baru
+      currentUser = "Siswa_#" + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('meuratep_anon_user', currentUser);
     }
+    document.getElementById('userBadge').innerText = currentUser;
 
     function logout() {
       localStorage.removeItem('meuratep_anon_user');
@@ -118,7 +114,6 @@
       window.location.href = 'index.html';
     }
 
-    // Switch Tab Utama
     function switchMainTab(tab) {
       const fBtn = document.getElementById('tabForumBtn');
       const cBtn = document.getElementById('tabCurhatBtn');
@@ -138,7 +133,7 @@
       }
     }
 
-    // Fetch Dan Render Threads
+    // Membaca Thread (menggunakan action: 'read_thread')
     async function loadThreads() {
       const container = document.getElementById('threadsContainer');
       container.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">Memuat thread...</div>';
@@ -147,12 +142,12 @@
         const response = await fetch(WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'read_threads' })
+          body: JSON.stringify({ action: 'read_thread' })
         });
         const resData = await response.json();
         const payload = Array.isArray(resData) ? resData[0] : resData;
 
-        if (payload && payload.status === 'success' && payload.data) {
+        if (payload && payload.status === 'success' && Array.isArray(payload.data)) {
           renderThreads(payload.data);
         } else {
           container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada thread publik.</div>';
@@ -163,12 +158,10 @@
       }
     }
 
-    // Render Hirarki Thread Utama & Reply
     function renderThreads(items) {
       const container = document.getElementById('threadsContainer');
       container.innerHTML = '';
 
-      // Pisahkan thread utama dan reply
       const mainThreads = items.filter(i => i.tipe === 'thread' || !i.parent_id);
       const replies = items.filter(i => i.tipe === 'reply' && i.parent_id);
 
@@ -185,20 +178,18 @@
         card.innerHTML = `
           <div class="flex items-center justify-between">
             <span class="text-xs font-mono text-indigo-400 font-semibold bg-indigo-950/60 border border-indigo-800/40 px-2.5 py-1 rounded-md">
-              ${thread.user}
+              ${escapeHtml(thread.user || 'Anonim')}
             </span>
             <span class="text-[11px] text-slate-500">${thread.createdAt ? new Date(thread.createdAt).toLocaleString('id-ID') : ''}</span>
           </div>
-          <p class="text-sm text-slate-200 leading-relaxed whitespace-pre-line">${escapeHtml(thread.pesan)}</p>
+          <p class="text-sm text-slate-200 leading-relaxed whitespace-pre-line">${escapeHtml(thread.pesan || '')}</p>
           
-          <!-- Tombol Balas -->
           <div class="pt-2 border-t border-slate-700/50 flex items-center justify-between">
             <button onclick="toggleReplyForm('${thread.id}')" class="text-xs font-semibold text-slate-400 hover:text-indigo-400 transition flex items-center space-x-1">
               <span>Balas (${childReplies.length})</span>
             </button>
           </div>
 
-          <!-- Form Input Balasan (Hidden Default) -->
           <div id="replyForm-${thread.id}" class="hidden pt-2 space-y-2">
             <textarea id="replyText-${thread.id}" rows="2" placeholder="Tulis balasan anonim..." 
                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"></textarea>
@@ -209,16 +200,15 @@
             </div>
           </div>
 
-          <!-- Container Balasan-Balasan -->
           ${childReplies.length > 0 ? `
             <div class="mt-3 pl-4 border-l-2 border-slate-700 space-y-2 pt-1">
               ${childReplies.map(r => `
                 <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 space-y-1">
                   <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-mono text-slate-400 font-semibold">${r.user}</span>
+                    <span class="text-[11px] font-mono text-slate-400 font-semibold">${escapeHtml(r.user || 'Anonim')}</span>
                     <span class="text-[10px] text-slate-500">${r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID') : ''}</span>
                   </div>
-                  <p class="text-xs text-slate-300 whitespace-pre-line">${escapeHtml(r.pesan)}</p>
+                  <p class="text-xs text-slate-300 whitespace-pre-line">${escapeHtml(r.pesan || '')}</p>
                 </div>
               `).join('')}
             </div>
@@ -228,13 +218,12 @@
       });
     }
 
-    // Toggle Form Balasan
     function toggleReplyForm(id) {
       const form = document.getElementById(`replyForm-${id}`);
-      form.classList.toggle('hidden');
+      if (form) form.classList.toggle('hidden');
     }
 
-    // Kirim Thread Baru
+    // Mengirim Thread Baru (action: 'write_thread')
     async function postThread() {
       const pesan = document.getElementById('newThreadPesan').value.trim();
       const btn = document.getElementById('btnPostThread');
@@ -264,7 +253,7 @@
       }
     }
 
-    // Kirim Balasan (Reply)
+    // Mengirim Balasan (action: 'write_thread')
     async function postReply(parentId) {
       const pesan = document.getElementById(`replyText-${parentId}`).value.trim();
       if (!pesan) return alert("Balasan tidak boleh kosong!");
@@ -287,7 +276,7 @@
       }
     }
 
-    // Kirim Curhat Privat ke BK
+    // Mengirim Curhat BK (action: 'write_curhat')
     async function sendCurhat() {
       const pesan = document.getElementById('curhatPesan').value.trim();
       const btn = document.getElementById('btnSendCurhat');
@@ -324,7 +313,6 @@
       return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // Load Pertama Kali
     loadThreads();
   </script>
 </body>
