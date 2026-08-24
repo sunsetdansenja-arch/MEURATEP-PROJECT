@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Guru BK - MEURATEP SMA 3</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+  <!-- Top Navigation Bar -->
+  <nav class="bg-slate-800/80 border-b border-slate-700/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold">
+          BK
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white leading-tight">MEURATEP SMA 3</h1>
+          <p class="text-xs text-amber-400 font-semibold">Portal Guru Bimbingan Konseling</p>
+        </div>
+      </div>
+      <!-- User Info & Logout -->
+      <div class="flex items-center space-x-3">
+        <span class="bg-amber-950/60 border border-amber-800/50 text-amber-300 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg">
+          Guru_BK_SMA3
+        </span>
+        <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-400 transition">Keluar</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- Tab Navigation -->
+    <div class="flex border-b border-slate-700/80 space-x-4">
+      <button id="tabCurhatBtn" onclick="switchMainTab('curhat')" class="pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 transition">
+        Inbox Curhat Privat
+      </button>
+      <button id="tabForumBtn" onclick="switchMainTab('forum')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+        Moderasi Forum Publik
+      </button>
+    </div>
+
+    <!-- SEKTOR 1: INBOX CURHAT PRIVAT -->
+    <section id="sectorCurhat" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Kotak Masuk Curhat Siswa</h2>
+          <p class="text-xs text-slate-400">Pesan ini bersifat rahasia dan hanya dapat diakses oleh Guru BK.</p>
+        </div>
+        <button onclick="loadCurhats()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-amber-400 transition">
+          Refresh Curhat
+        </button>
+      </div>
+
+      <div id="curhatContainer" class="space-y-4">
+        <div class="text-center py-8 text-slate-500 text-sm">Memuat pesan curhat...</div>
+      </div>
+    </section>
+
+    <!-- SEKTOR 2: MODERASI FORUM PUBLIK -->
+    <section id="sectorForum" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Pantauan Forum Diskusi Publik</h2>
+          <p class="text-xs text-slate-400">Monitoring seluruh postingan dan balasan forum siswa.</p>
+        </div>
+        <button onclick="loadThreads()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-indigo-400 transition">
+          Refresh Forum
+        </button>
+      </div>
+
+      <div id="forumContainer" class="space-y-4">
+        <div class="text-center py-8 text-slate-500 text-sm">Memuat thread forum...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
+
+    function logout() {
+      localStorage.removeItem('meuratep_role');
+      window.location.href = 'index.html';
+    }
+
+    function switchMainTab(tab) {
+      const cBtn = document.getElementById('tabCurhatBtn');
+      const fBtn = document.getElementById('tabForumBtn');
+      const cSec = document.getElementById('sectorCurhat');
+      const fSec = document.getElementById('sectorForum');
+
+      if (tab === 'curhat') {
+        cBtn.className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 transition";
+        fBtn.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition";
+        cSec.classList.remove('hidden');
+        fSec.classList.add('hidden');
+      } else {
+        fBtn.className = "pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 transition";
+        cBtn.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition";
+        fSec.classList.remove('hidden');
+        cSec.classList.add('hidden');
+      }
+    }
+
+    // MEMUAT PESAN CURHAT PRIVAT (action: 'read_curhat')
+    async function loadCurhats() {
+      const container = document.getElementById('curhatContainer');
+      container.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">Memuat pesan curhat...</div>';
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'read_curhat' })
+        });
+        const resData = await response.json();
+        const payload = Array.isArray(resData) ? resData[0] : resData;
+
+        if (payload && payload.status === 'success' && Array.isArray(payload.data)) {
+          renderCurhats(payload.data);
+        } else {
+          container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada pesan curhat masuk.</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="text-center py-6 text-rose-400 text-sm">Gagal memuat pesan curhat.</div>';
+      }
+    }
+
+    function renderCurhats(items) {
+      const container = document.getElementById('curhatContainer');
+      container.innerHTML = '';
+
+      if (items.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada pesan curhat masuk.</div>';
+        return;
+      }
+
+      items.forEach(curhat => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-800 border border-amber-500/20 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-amber-400 font-semibold bg-amber-950/60 border border-amber-800/40 px-2.5 py-1 rounded-md">
+              ${escapeHtml(curhat.user || 'Siswa Anonim')}
+            </span>
+            <span class="text-[11px] text-slate-500">${curhat.createdAt ? new Date(curhat.createdAt).toLocaleString('id-ID') : ''}</span>
+          </div>
+          <p class="text-sm text-slate-100 leading-relaxed whitespace-pre-line">${escapeHtml(curhat.pesan || '')}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // MEMUAT THREAD FORUM PUBLIK (action: 'read_thread')
+    async function loadThreads() {
+      const container = document.getElementById('forumContainer');
+      container.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">Memuat forum...</div>';
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'read_thread' })
+        });
+        const resData = await response.json();
+        const payload = Array.isArray(resData) ? resData[0] : resData;
+
+        if (payload && payload.status === 'success' && Array.isArray(payload.data)) {
+          renderThreads(payload.data);
+        } else {
+          container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada thread publik.</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="text-center py-6 text-rose-400 text-sm">Gagal memuat forum.</div>';
+      }
+    }
+
+    function renderThreads(items) {
+      const container = document.getElementById('forumContainer');
+      container.innerHTML = '';
+
+      const mainThreads = items.filter(i => i.tipe === 'thread' || !i.tipe || !i.tipe.startsWith('reply_'));
+
+      if (mainThreads.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada thread publik.</div>';
+        return;
+      }
+
+      mainThreads.forEach(thread => {
+        const childReplies = items.filter(i => i.tipe === `reply_${thread.id}`);
+        const card = document.createElement('div');
+        card.className = "bg-slate-800 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-indigo-400 font-semibold bg-indigo-950/60 border border-indigo-800/40 px-2.5 py-1 rounded-md">
+              ${escapeHtml(thread.user || 'Anonim')}
+            </span>
+            <span class="text-[11px] text-slate-500">${thread.createdAt ? new Date(thread.createdAt).toLocaleString('id-ID') : ''}</span>
+          </div>
+          <p class="text-sm text-slate-100 leading-relaxed whitespace-pre-line">${escapeHtml(thread.pesan || '')}</p>
+          
+          ${childReplies.length > 0 ? `
+            <div class="mt-3 pl-3 border-l-2 border-indigo-500/40 space-y-2 pt-2">
+              <span class="text-[11px] font-semibold text-slate-400">Balasan (${childReplies.length}):</span>
+              ${childReplies.map(r => `
+                <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/50 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-slate-400 font-semibold">${escapeHtml(r.user || 'Anonim')}</span>
+                    <span class="text-[9px] text-slate-500">${r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID') : ''}</span>
+                  </div>
+                  <p class="text-xs text-slate-300 whitespace-pre-line">${escapeHtml(r.pesan || '')}</p>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Initial Load
+    loadCurhats();
+  </script>
+</body>
+</html>
