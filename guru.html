@@ -95,7 +95,6 @@
   <script>
     const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
 
-    // Synchronize LocalStorage session
     let currentGuruUser = localStorage.getItem('meuratep_guru_user') || 'Guru_BK';
     let currentRole = localStorage.getItem('meuratep_role') || 'guru';
 
@@ -147,12 +146,16 @@
           })
         });
         const resData = await response.json();
-        const payload = Array.isArray(resData) ? resData[0] : resData;
+        
+        let items = [];
+        if (Array.isArray(resData)) {
+          items = (resData[0] && resData[0].status === 'success' && Array.isArray(resData[0].data)) ? resData[0].data : resData;
+        } else if (resData && resData.status === 'success' && Array.isArray(resData.data)) {
+          items = resData.data;
+        }
 
-        if (payload && payload.status === 'success' && Array.isArray(payload.data)) {
-          renderCurhats(payload.data);
-        } else if (payload && payload.status === 'error') {
-          container.innerHTML = `<div class="text-center py-6 text-rose-400 text-sm">${escapeHtml(payload.message)}</div>`;
+        if (Array.isArray(items) && items.length > 0) {
+          renderCurhats(items);
         } else {
           container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada pesan curhat masuk.</div>';
         }
@@ -166,21 +169,20 @@
       const container = document.getElementById('curhatContainer');
       container.innerHTML = '';
 
-      // Pisahkan Parent Threads dengan Replies
-      const parentPosts = items.filter(i => !i.parent_id && (!i.tipe || i.tipe === 'curhat'));
-      const replies = items.filter(i => i.parent_id || (i.tipe && i.tipe.startsWith('reply_')));
+      // Tipe 'curhat' / tanpa reply_ adalah pesan utama
+      const mainCurhats = items.filter(i => i.tipe === 'curhat' || !i.tipe || !i.tipe.startsWith('reply_'));
 
-      if (parentPosts.length === 0) {
+      if (mainCurhats.length === 0) {
         container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada pesan curhat masuk.</div>';
         return;
       }
 
-      parentPosts.forEach(curhat => {
+      mainCurhats.forEach(curhat => {
         const curhatId = curhat.id || curhat._id;
-        const childReplies = replies.filter(r => String(r.parent_id) === String(curhatId) || r.tipe === `reply_${curhatId}`);
+        const childReplies = items.filter(i => i.tipe === `reply_${curhatId}`);
 
         const card = document.createElement('div');
-        card.className = "bg-slate-800 border border-amber-500/20 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm";
+        card.className = "bg-slate-800 border border-amber-500/20 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm";
         card.innerHTML = `
           <div class="flex items-center justify-between">
             <span class="text-xs font-mono text-amber-400 font-semibold bg-amber-950/60 border border-amber-800/40 px-2.5 py-1 rounded-md">
@@ -189,22 +191,18 @@
             <span class="text-[11px] text-slate-500">${curhat.createdAt ? new Date(curhat.createdAt).toLocaleString('id-ID') : ''}</span>
           </div>
 
-          <!-- Pesan Utama -->
-          <p class="text-sm text-slate-100 leading-relaxed whitespace-pre-line bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50">${escapeHtml(curhat.pesan || '')}</p>
+          <p class="text-sm text-slate-100 leading-relaxed whitespace-pre-line">${escapeHtml(curhat.pesan || '')}</p>
 
-          <!-- Action & Reply Toggle -->
-          <div class="flex items-center justify-between pt-1">
+          <div class="pt-2 border-t border-slate-700/50 flex items-center justify-between">
             <button onclick="toggleTray('curhatReplyTray-${curhatId}')" class="text-xs font-semibold text-amber-400 hover:text-amber-300 transition flex items-center space-x-1">
-              💬 <span>${childReplies.length > 0 ? `Balasan Guru (${childReplies.length})` : 'Balas Curhat Ini'}</span>
+              💬 <span>${childReplies.length > 0 ? `Lihat/Balas (${childReplies.length})` : 'Balas Curhat Ini'}</span>
             </button>
           </div>
 
           <!-- Tray Balasan Curhat -->
           <div id="curhatReplyTray-${curhatId}" class="hidden mt-3 pl-3 sm:pl-4 border-l-2 border-amber-500/40 space-y-3 pt-2">
-            
-            <!-- Form Input Reply -->
-            <div class="bg-slate-900 p-3 rounded-xl border border-slate-700 space-y-2">
-              <textarea id="curhatReplyText-${curhatId}" rows="2" placeholder="Tuliskan balasan bimbingan/saran untuk siswa..." 
+            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-700 space-y-2">
+              <textarea id="curhatReplyText-${curhatId}" rows="2" placeholder="Balas curhat ini sebagai Guru BK..." 
                         class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"></textarea>
               <div class="flex justify-between items-center">
                 <span class="text-[10px] text-slate-500">Membalas sebagai ${escapeHtml(currentGuruUser)} (Guru BK)</span>
@@ -214,21 +212,19 @@
               </div>
             </div>
 
-            <!-- List Balasan Bertingkat -->
             ${childReplies.length > 0 ? `
               <div class="space-y-2">
                 ${childReplies.map(r => `
-                  <div class="bg-emerald-950/20 border border-emerald-500/30 p-3 rounded-xl space-y-1">
+                  <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 space-y-1">
                     <div class="flex items-center justify-between">
-                      <span class="text-[11px] font-bold text-emerald-400">👨‍🏫 ${escapeHtml(r.user || currentGuruUser)} (Guru BK)</span>
+                      <span class="text-[11px] font-mono text-amber-300 font-semibold">👨‍🏫 ${escapeHtml(r.user || currentGuruUser)} (Guru BK)</span>
                       <span class="text-[10px] text-slate-500">${r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID') : ''}</span>
                     </div>
                     <p class="text-xs text-slate-200 whitespace-pre-line">${escapeHtml(r.pesan || '')}</p>
                   </div>
                 `).join('')}
               </div>
-            ` : '<div class="text-xs text-slate-500 italic py-1">Belum ada balasan guru pada curhatan ini.</div>'}
-
+            ` : '<div class="text-xs text-slate-500 italic py-1">Belum ada balasan pada curhatan ini.</div>'}
           </div>
         `;
         container.appendChild(card);
@@ -251,7 +247,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'write_curhat',
-            parent_id: parentId,
             user: currentGuruUser,
             role: currentRole,
             pesan: pesan,
@@ -259,15 +254,12 @@
           })
         });
 
-        const resData = await response.json();
-        const payload = Array.isArray(resData) ? resData[0] : resData;
-
-        if (payload && payload.status === 'success') {
+        if (response.ok) {
           inputEl.value = '';
           await loadCurhats();
           toggleTray(`curhatReplyTray-${parentId}`);
         } else {
-          alert("Gagal mengirim balasan: " + (payload.message || "Terjadi kesalahan."));
+          alert("Gagal mengirim balasan.");
         }
       } catch (err) {
         console.error(err);
@@ -292,10 +284,16 @@
           body: JSON.stringify({ action: 'read_thread' })
         });
         const resData = await response.json();
-        const payload = Array.isArray(resData) ? resData[0] : resData;
 
-        if (payload && payload.status === 'success' && Array.isArray(payload.data)) {
-          renderThreads(payload.data);
+        let items = [];
+        if (Array.isArray(resData)) {
+          items = (resData[0] && resData[0].status === 'success' && Array.isArray(resData[0].data)) ? resData[0].data : resData;
+        } else if (resData && resData.status === 'success' && Array.isArray(resData.data)) {
+          items = resData.data;
+        }
+
+        if (Array.isArray(items) && items.length > 0) {
+          renderThreads(items);
         } else {
           container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada thread publik.</div>';
         }
@@ -309,8 +307,7 @@
       const container = document.getElementById('forumContainer');
       container.innerHTML = '';
 
-      const mainThreads = items.filter(i => (i.tipe === 'thread' || !i.tipe || !i.tipe.startsWith('reply_')) && !i.parent_id);
-      const replies = items.filter(i => i.parent_id || (i.tipe && i.tipe.startsWith('reply_')));
+      const mainThreads = items.filter(i => i.tipe === 'thread' || !i.tipe || !i.tipe.startsWith('reply_'));
 
       if (mainThreads.length === 0) {
         container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada thread publik.</div>';
@@ -319,7 +316,7 @@
 
       mainThreads.forEach(thread => {
         const threadId = thread.id || thread._id;
-        const childReplies = replies.filter(i => String(i.parent_id) === String(threadId) || i.tipe === `reply_${threadId}`);
+        const childReplies = items.filter(i => i.tipe === `reply_${threadId}`);
         
         const card = document.createElement('div');
         card.className = "bg-slate-800 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm";
@@ -416,7 +413,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'write_thread',
-            parent_id: parentId,
             user: currentGuruUser,
             role: currentRole,
             pesan: pesan,
