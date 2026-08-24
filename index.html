@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portal Masuk - MEURATEP SMA 3</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
@@ -14,7 +12,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4">
 
-  <!-- Main Container -->
   <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
     
     <!-- Header -->
@@ -28,7 +25,7 @@
       <p class="text-sm text-slate-400">Pilih opsi masuk ke dalam sistem</p>
     </div>
 
-    <!-- Navigation Tabs / Role Selection -->
+    <!-- Role Selection Tabs -->
     <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900/60 rounded-xl border border-slate-700/50">
       <button id="tabSiswaBtn" onclick="switchTab('siswa')" class="py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 bg-indigo-600 text-white shadow">
         Sebagai Siswa
@@ -53,7 +50,6 @@
 
     <!-- TAB 2: SEBAGAI HOST (GURU / DEVELOPER) -->
     <form id="sectionHost" onsubmit="handleHostLogin(event)" class="hidden space-y-4">
-      <!-- Error Notification -->
       <div id="loginError" class="hidden bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs p-3 rounded-xl"></div>
 
       <div class="space-y-1">
@@ -78,9 +74,7 @@
 
   <!-- MODAL INTRO SISWA -->
   <div id="introModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl animate-fade-in">
-      
-      <!-- Icon & Header -->
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
       <div class="flex items-center space-x-4">
         <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,36 +87,27 @@
         </div>
       </div>
 
-      <!-- Info Box User -->
       <div class="bg-slate-900/80 border border-slate-700/80 p-4 rounded-xl space-y-1">
         <span class="text-xs text-slate-400 block">ID Anonim Anda:</span>
         <span id="displayAnonUsername" class="text-lg font-mono font-bold text-indigo-400 tracking-wider"></span>
       </div>
 
-      <!-- Guidelines -->
       <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
         <div class="flex items-start space-x-2">
           <span class="text-emerald-400 font-bold">✓</span>
-          <p><strong class="text-white">Anonimitas Penuh:</strong> Semua pesan di thread dipublikasikan secara sepenuhnya <span class="text-emerald-400 font-semibold">anonymous & end-to-end encrypted</span>.</p>
-        </div>
-        <div class="flex items-start space-x-2">
-          <span class="text-amber-400 font-bold">!</span>
-          <p><strong class="text-white">Etika Pesan:</strong> Mohon tetap <span class="text-amber-400 font-semibold">bijak dan santun</span> dalam mengirimkan postingan atau membalas pesan.</p>
+          <p><strong class="text-white">Anonimitas Penuh:</strong> Identitas Anda dijaga secara permanen saat berkonsultasi.</p>
         </div>
       </div>
 
-      <!-- Action Button -->
       <button onclick="proceedToSiswaDashboard()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition">
         Lanjutkan ke Dashboard Siswa
       </button>
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
   <script>
     const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
 
-    // Switch Tab View
     function switchTab(tab) {
       const btnSiswa = document.getElementById('tabSiswaBtn');
       const btnHost = document.getElementById('tabHostBtn');
@@ -142,7 +127,6 @@
       }
     }
 
-    // Generate Random Anonymous Username for Siswa
     function getOrCreateAnonUser() {
       let username = localStorage.getItem('meuratep_anon_user');
       if (!username) {
@@ -153,25 +137,23 @@
       return username;
     }
 
-    // Handle Click Masuk Siswa
     function handleSiswaLogin() {
       const anonUser = getOrCreateAnonUser();
       document.getElementById('displayAnonUsername').innerText = anonUser;
       document.getElementById('introModal').classList.remove('hidden');
     }
 
-    // Redirect to Siswa Dashboard
     function proceedToSiswaDashboard() {
       localStorage.setItem('meuratep_role', 'siswa');
       window.location.href = 'siswa.html';
     }
 
-    // Handle Form Login Host (Guru / Developer)
+    // AUTHENTIKASI & DYNAMIC REDIRECTION
     async function handleHostLogin(e) {
       e.preventDefault();
       
       const usernameInput = document.getElementById('hostUsername').value.trim();
-      const passwordInput = document.getElementById('hostPassword').value;
+      const passwordInput = document.getElementById('hostPassword').value.trim();
       const errorDiv = document.getElementById('loginError');
       const btnText = document.getElementById('btnHostText');
       const btnSpinner = document.getElementById('btnHostSpinner');
@@ -188,7 +170,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'login',
-            user: usernameInput,
+            user: usernameInput,       // Key dikirim sebagai "user"
             password: passwordInput
           })
         });
@@ -197,14 +179,13 @@
         const payload = Array.isArray(result) ? result[0] : result;
 
         if (payload && payload.status === 'success') {
-          // Mendapatkan role dari payload (misal: "guru" atau "developer")
           const userRole = (payload.role || (payload.data && payload.data.role) || '').toLowerCase().trim();
           
-          // Simpan kredensial ke localStorage
+          // Simpan session
           localStorage.setItem('meuratep_guru_user', usernameInput);
           localStorage.setItem('meuratep_role', userRole);
 
-          // Dynamic Redirection berdasarkan Role
+          // Routing berpatokan murni pada kolom "role"
           if (userRole === 'guru' || userRole === 'guru_bk') {
             window.location.href = 'guru.html';
           } else if (userRole === 'developer') {
@@ -216,13 +197,13 @@
             errorDiv.classList.remove('hidden');
           }
         } else {
-          errorDiv.innerText = payload.message || "Login gagal. Cek username & password.";
+          errorDiv.innerText = payload.message || "Username atau password salah.";
           errorDiv.classList.remove('hidden');
         }
       } catch (err) {
         console.error(err);
 
-        // Fallback autentikasi lokal jika jaringan/n8n mengalami kendala
+        // Fallback Autentikasi berdasarkan Database Auth (nibras -> guru, masteruser -> developer)
         if (usernameInput === 'nibras' && passwordInput === '0') {
           localStorage.setItem('meuratep_guru_user', 'nibras');
           localStorage.setItem('meuratep_role', 'guru');
@@ -232,7 +213,7 @@
           localStorage.setItem('meuratep_role', 'developer');
           window.location.href = 'developer.html';
         } else {
-          errorDiv.innerText = "Gagal terhubung ke server backend n8n.";
+          errorDiv.innerText = "Gagal terhubung ke server autentikasi.";
           errorDiv.classList.remove('hidden');
         }
       } finally {
@@ -242,6 +223,5 @@
       }
     }
   </script>
-
 </body>
 </html>
