@@ -304,7 +304,356 @@
       } catch (err) {
         alert("Gagal mengirim curhat.");
       } finally {
+        btn.disabled = false;<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Siswa - MEURATEP SMA 3</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+  <!-- Top Navigation Bar -->
+  <nav class="bg-slate-800/80 border-b border-slate-700/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
+          M3
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white leading-tight">MEURATEP SMA 3</h1>
+          <p class="text-xs text-slate-400">Portal Anonim Siswa</p>
+        </div>
+      </div>
+      <!-- User Info Badge & Logout -->
+      <div class="flex items-center space-x-3">
+        <span id="userBadge" class="bg-slate-900 border border-slate-700 text-indigo-400 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg"></span>
+        <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-400 transition">Keluar</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="max-w-4xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- Tab Switching -->
+    <div class="flex border-b border-slate-700/80 space-x-4">
+      <button id="tabForumBtn" onclick="switchMainTab('forum')" class="pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 transition">
+        Forum Publik (Threads)
+      </button>
+      <button id="tabCurhatBtn" onclick="switchMainTab('curhat')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+        Kanal Curhat BK (Privat)
+      </button>
+    </div>
+
+    <!-- SEKTOR 1: FORUM PUBLIK -->
+    <section id="sectorForum" class="space-y-6">
+      <!-- Form Buat Thread Baru -->
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg">
+        <h2 class="text-sm font-bold text-slate-200">Buat Postingan Baru</h2>
+        <textarea id="newThreadPesan" rows="3" placeholder="Tuliskan ide, pertanyaan, atau isu secara anonim di sini..." 
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"></textarea>
+        <div class="flex justify-between items-center pt-1">
+          <span class="text-xs text-slate-400">Dipublikasikan secara anonim & terenkripsi</span>
+          <button onclick="postThread()" id="btnPostThread" class="py-2 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30">
+            Kirim Thread
+          </button>
+        </div>
+      </div>
+
+      <!-- Feed Threads List -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Diskusi Terkini</h3>
+          <button onclick="loadThreads()" class="text-xs text-indigo-400 hover:underline">Refresh Data</button>
+        </div>
+        <div id="threadsContainer" class="space-y-4">
+          <div class="text-center py-8 text-slate-500 text-sm">Memuat thread...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEKTOR 2: KANAL CURHAT BK -->
+    <section id="sectorCurhat" class="hidden space-y-6">
+      <div class="bg-slate-800 border border-amber-500/30 rounded-2xl p-4 sm:p-6 space-y-4 shadow-lg">
+        <div class="flex items-start space-x-3">
+          <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-white">Layanan Curhat Konseling BK</h2>
+            <p class="text-xs text-slate-400">Pesan yang Anda kirimkan di sini HANYA dapat dibaca oleh Guru BK sekolah. Bebas ungkapkan masalah Anda secara anonim.</p>
+          </div>
+        </div>
+
+        <textarea id="curhatPesan" rows="4" placeholder="Ceritakan keluh kesah atau masalah yang sedang kamu alami secara bebas..." 
+                  class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition"></textarea>
+
+        <div id="curhatAlert" class="hidden bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 text-xs p-3 rounded-xl"></div>
+
+        <button onclick="sendCurhat()" id="btnSendCurhat" class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-amber-600/30">
+          Kirim Curhat Ke Guru BK
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
+    let currentUser = localStorage.getItem('meuratep_anon_user');
+
+    if (!currentUser) {
+      currentUser = "Siswa_#" + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('meuratep_anon_user', currentUser);
+    }
+    document.getElementById('userBadge').innerText = currentUser;
+
+    function logout() {
+      localStorage.removeItem('meuratep_anon_user');
+      localStorage.removeItem('meuratep_role');
+      window.location.href = 'index.html';
+    }
+
+    function switchMainTab(tab) {
+      const fBtn = document.getElementById('tabForumBtn');
+      const cBtn = document.getElementById('tabCurhatBtn');
+      const fSec = document.getElementById('sectorForum');
+      const cSec = document.getElementById('sectorCurhat');
+
+      if (tab === 'forum') {
+        fBtn.className = "pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 transition";
+        cBtn.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition";
+        fSec.classList.remove('hidden');
+        cSec.classList.add('hidden');
+      } else {
+        cBtn.className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 transition";
+        fBtn.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition";
+        cSec.classList.remove('hidden');
+        fSec.classList.add('hidden');
+      }
+    }
+
+    // Load Threads (Diseragamkan: action: 'read_thread')
+    async function loadThreads() {
+      const container = document.getElementById('threadsContainer');
+      container.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">Memuat thread...</div>';
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'read_thread' })
+        });
+        const resData = await response.json();
+        const payload = Array.isArray(resData) ? resData[0] : resData;
+
+        if (payload && payload.status === 'success' && Array.isArray(payload.data)) {
+          renderThreads(payload.data);
+        } else {
+          container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada thread publik.</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="text-center py-6 text-rose-400 text-sm">Gagal memuat thread.</div>';
+      }
+    }
+
+    // Render Hirarki Thread Utama & Reply dengan Quote Block Origin Tracking
+    function renderThreads(items) {
+      const container = document.getElementById('threadsContainer');
+      container.innerHTML = '';
+
+      const mainThreads = items.filter(i => i.tipe === 'thread' || !i.parent_id);
+      const replies = items.filter(i => i.tipe === 'reply' && i.parent_id);
+
+      if (mainThreads.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada thread publik.</div>';
+        return;
+      }
+
+      mainThreads.forEach(thread => {
+        const childReplies = replies.filter(r => String(r.parent_id) === String(thread.id));
+        
+        const card = document.createElement('div');
+        card.className = "bg-slate-800 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm";
+        
+        let repliesHtml = '';
+        if (childReplies.length > 0) {
+          repliesHtml = `
+            <div class="mt-4 pl-3 sm:pl-4 border-l-2 border-indigo-500/50 space-y-3 pt-2">
+              ${childReplies.map(r => {
+                // Potong teks pesan induk sebagai konteks kutipan
+                const parentSnippet = thread.pesan.length > 60 ? thread.pesan.substring(0, 60) + '...' : thread.pesan;
+                return `
+                  <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700/60 space-y-2">
+                    <!-- Origin Tracking Block -->
+                    <div class="bg-slate-950/80 border-l-2 border-indigo-400 px-2.5 py-1.5 rounded-r-md text-[11px] text-slate-400 flex items-center space-x-1.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                      </svg>
+                      <span class="truncate">Membalas <strong class="text-slate-300">${escapeHtml(thread.user || 'Anonim')}</strong>: "${escapeHtml(parentSnippet)}"</span>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                      <span class="text-xs font-mono text-indigo-300 font-semibold">${escapeHtml(r.user || 'Anonim')}</span>
+                      <span class="text-[10px] text-slate-500">${r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID') : ''}</span>
+                    </div>
+                    <p class="text-xs text-slate-200 leading-relaxed whitespace-pre-line">${escapeHtml(r.pesan || '')}</p>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <!-- Header Thread Utama -->
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-indigo-400 font-semibold bg-indigo-950/60 border border-indigo-800/40 px-2.5 py-1 rounded-md">
+              ${escapeHtml(thread.user || 'Anonim')}
+            </span>
+            <span class="text-[11px] text-slate-500">${thread.createdAt ? new Date(thread.createdAt).toLocaleString('id-ID') : ''}</span>
+          </div>
+          
+          <!-- Isi Thread Utama -->
+          <p class="text-sm text-slate-100 leading-relaxed whitespace-pre-line">${escapeHtml(thread.pesan || '')}</p>
+          
+          <!-- Tombol Balas -->
+          <div class="pt-2 border-t border-slate-700/50 flex items-center justify-between">
+            <button onclick="toggleReplyForm('${thread.id}')" class="text-xs font-semibold text-slate-400 hover:text-indigo-400 transition flex items-center space-x-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span>Balas (${childReplies.length})</span>
+            </button>
+          </div>
+
+          <!-- Form Input Balasan (Hidden Default) -->
+          <div id="replyForm-${thread.id}" class="hidden pt-2 space-y-2">
+            <textarea id="replyText-${thread.id}" rows="2" placeholder="Tulis balasan anonim..." 
+                      class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"></textarea>
+            <div class="flex justify-end">
+              <button onclick="postReply('${thread.id}')" class="py-1.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs transition">
+                Kirim Balasan
+              </button>
+            </div>
+          </div>
+
+          <!-- Container Balasan-Balasan dengan Quote Origin -->
+          ${repliesHtml}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function toggleReplyForm(id) {
+      const form = document.getElementById(`replyForm-${id}`);
+      if (form) form.classList.toggle('hidden');
+    }
+
+    // Kirim Thread Baru (action: 'write_thread')
+    async function postThread() {
+      const pesan = document.getElementById('newThreadPesan').value.trim();
+      const btn = document.getElementById('btnPostThread');
+      if (!pesan) return alert("Pesan tidak boleh kosong!");
+
+      btn.disabled = true;
+      btn.innerText = "Sending...";
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'write_thread',
+            user: currentUser,
+            pesan: pesan,
+            tipe: 'thread'
+          })
+        });
+        document.getElementById('newThreadPesan').value = '';
+        loadThreads();
+      } catch (err) {
+        alert("Gagal mempublikasikan thread.");
+      } finally {
         btn.disabled = false;
+        btn.innerText = "Kirim Thread";
+      }
+    }
+
+    // Kirim Balasan (action: 'write_thread')
+    async function postReply(parentId) {
+      const pesan = document.getElementById(`replyText-${parentId}`).value.trim();
+      if (!pesan) return alert("Balasan tidak boleh kosong!");
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'write_thread',
+            user: currentUser,
+            pesan: pesan,
+            tipe: 'reply',
+            parent_id: parentId
+          })
+        });
+        loadThreads();
+      } catch (err) {
+        alert("Gagal mempublikasikan balasan.");
+      }
+    }
+
+    // Kirim Curhat BK (action: 'write_curhat')
+    async function sendCurhat() {
+      const pesan = document.getElementById('curhatPesan').value.trim();
+      const btn = document.getElementById('btnSendCurhat');
+      const alertDiv = document.getElementById('curhatAlert');
+      if (!pesan) return alert("Pesan curhat tidak boleh kosong!");
+
+      btn.disabled = true;
+      btn.innerText = "Mengirim...";
+      alertDiv.classList.add('hidden');
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'write_curhat',
+            user: currentUser,
+            pesan: pesan,
+            tipe: 'curhat'
+          })
+        });
+        document.getElementById('curhatPesan').value = '';
+        alertDiv.innerText = "Pesan curhatmu telah terkirim secara rahasia ke Guru BK.";
+        alertDiv.classList.remove('hidden');
+      } catch (err) {
+        alert("Gagal mengirim curhat.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Kirim Curhat Ke Guru BK";
+      }
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Load Pertama Kali
+    loadThreads();
+  </script>
+</body>
+</html>
         btn.innerText = "Kirim Curhat Ke Guru BK";
       }
     }
