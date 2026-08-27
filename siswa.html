@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Siswa - MEURATEP SMA 3</title>
+  <title>Portal Siswa - MEURATEP SMA 3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -12,7 +12,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
 
-  <!-- Top Navigation Bar -->
   <nav class="bg-slate-800/80 border-b border-slate-700/80 backdrop-blur sticky top-0 z-40">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -24,18 +23,19 @@
           <p class="text-xs text-slate-400">Portal Anonim Siswa</p>
         </div>
       </div>
-      <!-- User Info Badge & Action Buttons -->
       <div class="flex items-center space-x-3">
         <span id="userBadge" class="bg-slate-900 border border-slate-700 text-indigo-400 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg"></span>
-        <button id="authBtn" onclick="handleAuthAction()" class="text-xs text-slate-400 hover:text-rose-400 transition">Keluar</button>
+        <button id="authBtn" onclick="handleAuthAction()" class="text-xs text-slate-400 hover:text-rose-400 transition cursor-pointer">Keluar</button>
       </div>
     </div>
   </nav>
 
-  <!-- Main Container -->
+  <div id="guestNotice" class="hidden bg-amber-950/80 border-b border-amber-800/60 text-amber-200 text-xs py-2 px-4 text-center">
+    👀 Anda sedang berada pada <strong>Mode Tamu (Read-Only)</strong>. Silakan klik <strong>"Masuk Kembali"</strong> di kanan atas untuk mulai berinteraksi.
+  </div>
+
   <main class="max-w-4xl mx-auto px-4 mt-6 space-y-6">
 
-    <!-- Tab Switching -->
     <div class="flex border-b border-slate-700/80 space-x-4">
       <button id="tabForumBtn" onclick="switchMainTab('forum')" class="pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 transition">
         Forum Publik (Threads)
@@ -45,10 +45,8 @@
       </button>
     </div>
 
-    <!-- SEKTOR 1: FORUM PUBLIK -->
     <section id="sectorForum" class="space-y-6">
-      <!-- Form Buat Thread Baru -->
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg">
+      <div id="forumFormBox" class="bg-slate-800 border border-slate-700 rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg">
         <h2 class="text-sm font-bold text-slate-200">Buat Postingan Baru</h2>
         <textarea id="newThreadPesan" rows="3" placeholder="Tuliskan ide, pertanyaan, atau isu secara anonim di sini..." 
                   class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"></textarea>
@@ -60,7 +58,6 @@
         </div>
       </div>
 
-      <!-- Feed Threads List -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Diskusi Terkini</h3>
@@ -72,10 +69,8 @@
       </div>
     </section>
 
-    <!-- SEKTOR 2: KANAL CURHAT BK -->
     <section id="sectorCurhat" class="hidden space-y-6">
-      <!-- Form Kirim Curhat Privat -->
-      <div class="bg-slate-800 border border-amber-500/30 rounded-2xl p-4 sm:p-6 space-y-4 shadow-lg">
+      <div id="curhatFormBox" class="bg-slate-800 border border-amber-500/30 rounded-2xl p-4 sm:p-6 space-y-4 shadow-lg">
         <div class="flex items-start space-x-3">
           <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,7 +93,6 @@
         </button>
       </div>
 
-      <!-- Riwayat Curhat Privat & Balasan Guru BK -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-semibold text-amber-400 uppercase tracking-wider">Riwayat Curhat Kamu</h3>
@@ -112,59 +106,98 @@
 
   </main>
 
+  <div id="firstLoginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 space-y-5 shadow-2xl text-center">
+      <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-full flex items-center justify-center mx-auto">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 4.12A13.91 13.91 0 0112 21c-3.517 0-6.799-1.009-9.571-2.753" />
+        </svg>
+      </div>
+      <div class="space-y-2">
+        <h2 class="text-xl font-bold text-white">Masuk Portal Anonim</h2>
+        <p class="text-xs text-slate-400">Sistem akan membuatkan ID Anonim unik untuk perangkat ini agar privacy Anda tetap terjaga 100%.</p>
+      </div>
+
+      <button onclick="generateFirstTimeUser()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30">
+        Buat ID Anonim Saya & Masuk
+      </button>
+    </div>
+  </div>
+
   <script>
     const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
     
     let currentUser = localStorage.getItem('meuratep_anon_user');
     let isLoggedIn = localStorage.getItem('meuratep_logged_in') === 'true';
 
-    // 1. Dapatkan atau Pertahankan ID Anonim yang Sama
-    if (!currentUser) {
+    // Inisialisasi awal saat siswa.html dibuka langsung
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!currentUser) {
+        // Tampilkan modal regis pertama kali jika belum pernah punya ID
+        document.getElementById('firstLoginModal').classList.remove('hidden');
+      } else {
+        // Jika sudah punya ID dan tidak dalam status logout, otomatis aktifkan login
+        if (localStorage.getItem('meuratep_logged_in') === null) {
+          localStorage.setItem('meuratep_logged_in', 'true');
+          isLoggedIn = true;
+        }
+        initUI();
+      }
+    });
+
+    function generateFirstTimeUser() {
       currentUser = "Siswa_#" + Math.floor(1000 + Math.random() * 9000);
       localStorage.setItem('meuratep_anon_user', currentUser);
-    }
-    
-    // Secara otomatis anggap logged_in jika user mengakses halaman siswa
-    if (!isLoggedIn) {
       localStorage.setItem('meuratep_logged_in', 'true');
-      localStorage.setItem('meuratep_role', 'siswa');
       isLoggedIn = true;
+      document.getElementById('firstLoginModal').classList.add('hidden');
+      initUI();
     }
 
-    updateAuthUI();
+    function initUI() {
+      updateAuthUI();
+      loadThreads();
+    }
 
     function updateAuthUI() {
       const userBadge = document.getElementById('userBadge');
       const authBtn = document.getElementById('authBtn');
+      const guestNotice = document.getElementById('guestNotice');
+      const forumFormBox = document.getElementById('forumFormBox');
+      const curhatFormBox = document.getElementById('curhatFormBox');
 
       if (isLoggedIn) {
         userBadge.innerText = currentUser;
         userBadge.className = "bg-slate-900 border border-slate-700 text-indigo-400 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg";
         authBtn.innerText = "Keluar (Logout)";
         authBtn.className = "text-xs text-slate-400 hover:text-rose-400 transition cursor-pointer";
+        guestNotice.classList.add('hidden');
+        
+        if (forumFormBox) forumFormBox.classList.remove('opacity-50', 'pointer-events-none');
+        if (curhatFormBox) curhatFormBox.classList.remove('opacity-50', 'pointer-events-none');
       } else {
-        userBadge.innerText = "Tamu (Belum Login)";
-        userBadge.className = "bg-slate-900 border border-slate-700 text-slate-500 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg";
-        authBtn.innerText = "Masuk (Login)";
+        userBadge.innerText = "Tamu (Read-Only)";
+        userBadge.className = "bg-slate-900 border border-slate-700 text-amber-400 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg";
+        authBtn.innerText = "Masuk Kembali";
         authBtn.className = "text-xs text-emerald-400 font-semibold hover:text-emerald-300 transition cursor-pointer";
+        guestNotice.classList.remove('hidden');
+
+        // Disable Form jika mode Tamu
+        if (forumFormBox) forumFormBox.classList.add('opacity-50', 'pointer-events-none');
+        if (curhatFormBox) curhatFormBox.classList.add('opacity-50', 'pointer-events-none');
       }
     }
 
-    // 2. Logika Toggle Login / Logout
     function handleAuthAction() {
       if (isLoggedIn) {
-        // LOGOUT: Cukup hapus status login, ID anonim meuratep_anon_user TETAP DIPERTANAHKAN
-        localStorage.removeItem('meuratep_logged_in');
-        localStorage.removeItem('meuratep_role');
+        // Logout ke Mode Tamu: Hapus status login, ID anonim TETAP ADA
+        localStorage.setItem('meuratep_logged_in', 'false');
         isLoggedIn = false;
-        alert("Kamu telah keluar. ID Anonim kamu (" + currentUser + ") tetap tersimpan di perangkat ini.");
         updateAuthUI();
       } else {
-        // LOGIN KEMBALI: Mengaktifkan kembali status login dengan ID anonim yang sama
+        // Login Kembali dari Mode Tamu pakai ID yang sama
         localStorage.setItem('meuratep_logged_in', 'true');
-        localStorage.setItem('meuratep_role', 'siswa');
         isLoggedIn = true;
-        alert("Selamat datang kembali sebagai " + currentUser);
         updateAuthUI();
         loadThreads();
       }
@@ -192,7 +225,7 @@
     }
 
     // ==========================================
-    // SEKTOR 1: FORUM PUBLIK & REPLIES
+    // FORUM PUBLIK & BALASAN
     // ==========================================
     async function loadThreads() {
       const container = document.getElementById('threadsContainer');
@@ -257,18 +290,19 @@
             </button>
           </div>
 
-          <!-- Dropdown Tray Balasan Forum -->
           <div id="replyTray-${threadId}" class="hidden mt-3 pl-3 sm:pl-4 border-l-2 border-indigo-500/40 space-y-3 pt-2">
-            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-700 space-y-2">
-              <textarea id="replyText-${threadId}" rows="2" placeholder="Tulis balasan anonim..." 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"></textarea>
-              <div class="flex justify-between items-center">
-                <span class="text-[10px] text-slate-500">Membalas @${escapeHtml(thread.user || 'Anonim')}</span>
-                <button onclick="postReply('${threadId}')" id="btnReply-${threadId}" class="py-1.5 px-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs transition">
-                  Kirim Balasan
-                </button>
+            ${isLoggedIn ? `
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-700 space-y-2">
+                <textarea id="replyText-${threadId}" rows="2" placeholder="Tulis balasan anonim..." 
+                          class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"></textarea>
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] text-slate-500">Membalas @${escapeHtml(thread.user || 'Anonim')}</span>
+                  <button onclick="postReply('${threadId}')" id="btnReply-${threadId}" class="py-1.5 px-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs transition">
+                    Kirim Balasan
+                  </button>
+                </div>
               </div>
-            </div>
+            ` : '<div class="text-xs text-amber-400 italic py-1">Login kembali untuk ikut membalas thread ini.</div>'}
 
             ${childReplies.length > 0 ? `
               <div class="space-y-2">
@@ -290,7 +324,7 @@
     }
 
     async function postThread() {
-      if (!isLoggedIn) return alert("Silakan Login terlebih dahulu untuk mengirim thread!");
+      if (!isLoggedIn) return alert("Anda dalam mode Tamu. Klik 'Masuk Kembali' di kanan atas!");
       const pesan = document.getElementById('newThreadPesan').value.trim();
       const btn = document.getElementById('btnPostThread');
       if (!pesan) return alert("Pesan tidak boleh kosong!");
@@ -320,7 +354,7 @@
     }
 
     async function postReply(parentId) {
-      if (!isLoggedIn) return alert("Silakan Login terlebih dahulu untuk membalas!");
+      if (!isLoggedIn) return alert("Anda dalam mode Tamu. Klik 'Masuk Kembali' di kanan atas!");
       const inputEl = document.getElementById(`replyText-${parentId}`);
       const btn = document.getElementById(`btnReply-${parentId}`);
       const pesan = inputEl.value.trim();
@@ -353,10 +387,10 @@
     }
 
     // ==========================================
-    // SEKTOR 2: KANAL CURHAT BK & REPLIES TRAY
+    // KANAL CURHAT BK & REPLIES TRAY
     // ==========================================
     async function sendCurhat() {
-      if (!isLoggedIn) return alert("Silakan Login terlebih dahulu untuk mengirim curhat!");
+      if (!isLoggedIn) return alert("Anda dalam mode Tamu. Klik 'Masuk Kembali' di kanan atas!");
       const pesan = document.getElementById('curhatPesan').value.trim();
       const btn = document.getElementById('btnSendCurhat');
       const alertDiv = document.getElementById('curhatAlert');
@@ -391,7 +425,7 @@
 
     async function loadMyCurhats() {
       if (!isLoggedIn) {
-        document.getElementById('myCurhatContainer').innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Silakan Login untuk melihat riwayat curhat kamu.</div>';
+        document.getElementById('myCurhatContainer').innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Mode Tamu: Silakan Login Kembali untuk melihat riwayat curhat kamu.</div>';
         return;
       }
 
@@ -461,18 +495,19 @@
             </button>
           </div>
 
-          <!-- Dropdown Tray Balasan Curhat Privat -->
           <div id="curhatReplyTray-${curhatId}" class="hidden mt-3 pl-3 sm:pl-4 border-l-2 border-amber-500/40 space-y-3 pt-2">
-            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-700 space-y-2">
-              <textarea id="curhatReplyText-${curhatId}" rows="2" placeholder="Tulis pesan lanjutan untuk Guru BK..." 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"></textarea>
-              <div class="flex justify-between items-center">
-                <span class="text-[10px] text-slate-500">Kirim balasan rahasia</span>
-                <button onclick="postCurhatReply('${curhatId}')" id="btnCurhatReply-${curhatId}" class="py-1.5 px-3.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg text-xs transition">
-                  Kirim Balasan
-                </button>
+            ${isLoggedIn ? `
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-700 space-y-2">
+                <textarea id="curhatReplyText-${curhatId}" rows="2" placeholder="Tulis pesan lanjutan untuk Guru BK..." 
+                          class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"></textarea>
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] text-slate-500">Kirim balasan rahasia</span>
+                  <button onclick="postCurhatReply('${curhatId}')" id="btnCurhatReply-${curhatId}" class="py-1.5 px-3.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg text-xs transition">
+                    Kirim Balasan
+                  </button>
+                </div>
               </div>
-            </div>
+            ` : '<div class="text-xs text-amber-400 italic py-1">Login kembali untuk membalas Guru BK.</div>'}
 
             ${childReplies.length > 0 ? `
               <div class="space-y-2">
@@ -496,7 +531,7 @@
     }
 
     async function postCurhatReply(parentId) {
-      if (!isLoggedIn) return alert("Silakan Login terlebih dahulu untuk membalas!");
+      if (!isLoggedIn) return alert("Anda dalam mode Tamu. Klik 'Masuk Kembali' di kanan atas!");
       const inputEl = document.getElementById(`curhatReplyText-${parentId}`);
       const btn = document.getElementById(`btnCurhatReply-${parentId}`);
       const pesan = inputEl.value.trim();
@@ -537,9 +572,6 @@
     function escapeHtml(text) {
       return String(text || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
-
-    // Load awal saat halaman dibuka
-    loadThreads();
   </script>
 </body>
 </html>
