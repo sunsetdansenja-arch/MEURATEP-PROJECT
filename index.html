@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Masuk - MEURATEP SMA 3</title>
+  <title>Portal Host - MEURATEP SMA 3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -14,158 +14,52 @@
 
   <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
     
-    <!-- Header -->
+    <!-- Header Logo & Title -->
     <div class="text-center space-y-2">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-600/20 text-indigo-400 mb-2 border border-indigo-500/30">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-600/20 text-emerald-400 mb-2 border border-emerald-500/30">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       </div>
       <h1 class="text-2xl font-bold tracking-tight text-white">MEURATEP SMA 3</h1>
-      <p class="text-sm text-slate-400">Pilih opsi masuk ke dalam sistem</p>
+      <p class="text-xs text-slate-400">Portal Authentikasi Guru BK & Admin System</p>
     </div>
 
-    <!-- Role Selection Tabs -->
-    <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900/60 rounded-xl border border-slate-700/50">
-      <button id="tabSiswaBtn" onclick="switchTab('siswa')" class="py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 bg-indigo-600 text-white shadow">
-        Sebagai Siswa
-      </button>
-      <button id="tabHostBtn" onclick="switchTab('host')" class="py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-white">
-        Sebagai Host
-      </button>
-    </div>
-
-    <!-- TAB 1: SEBAGAI SISWA -->
-    <div id="sectionSiswa" class="space-y-4">
-      <div class="bg-indigo-950/40 border border-indigo-800/50 rounded-xl p-4 text-xs text-indigo-200 leading-relaxed">
-        Masuk secara langsung tanpa registrasi akun. Identitas Anda dijaga anonim secara lokal pada perangkat Anda.
-      </div>
-      <button onclick="handleSiswaLogin()" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
-        <span>Masuk Sebagai Siswa</span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-        </svg>
-      </button>
-    </div>
-
-    <!-- TAB 2: SEBAGAI HOST (GURU / DEVELOPER) -->
-    <form id="sectionHost" onsubmit="handleHostLogin(event)" class="hidden space-y-4">
+    <!-- Form Login Host -->
+    <form id="sectionHost" onsubmit="handleHostLogin(event)" class="space-y-4">
       <div id="loginError" class="hidden bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs p-3 rounded-xl"></div>
 
       <div class="space-y-1">
-        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Username / ID</label>
+        <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Username / ID Host</label>
         <input type="text" id="hostUsername" required placeholder="Masukkan username" 
-               class="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition text-sm">
+               class="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm">
       </div>
 
       <div class="space-y-1">
         <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Password</label>
         <input type="password" id="hostPassword" required placeholder="••••••••" 
-               class="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition text-sm">
+               class="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm">
       </div>
 
       <button type="submit" id="btnSubmitHost" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2">
-        <span id="btnHostText">Login Host</span>
+        <span id="btnHostText">Login Ke Dashboard</span>
         <div id="btnHostSpinner" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
       </button>
     </form>
 
-  </div>
-
-  <!-- MODAL INTRO SISWA -->
-  <div id="introModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-      <div class="flex items-center space-x-4">
-        <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-        </div>
-        <div>
-          <h2 class="text-xl font-bold text-white">Selamat Datang!</h2>
-          <p class="text-xs text-slate-400">Panduan & Identitas Anonim Pengguna</p>
-        </div>
-      </div>
-
-      <div class="bg-slate-900/80 border border-slate-700/80 p-4 rounded-xl space-y-1">
-        <span class="text-xs text-slate-400 block">ID Anonim Anda:</span>
-        <span id="displayAnonUsername" class="text-lg font-mono font-bold text-indigo-400 tracking-wider"></span>
-      </div>
-
-      <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
-        <div class="flex items-start space-x-2">
-          <span class="text-emerald-400 font-bold">✓</span>
-          <p><strong class="text-white">Anonimitas Penuh:</strong> Identitas Anda dijaga secara permanen saat berkonsultasi.</p>
-        </div>
-      </div>
-
-      <button onclick="proceedToSiswaDashboard()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition">
-        Lanjutkan ke Dashboard Siswa
-      </button>
+    <!-- Navigation Link ke Siswa -->
+    <div class="text-center pt-2">
+      <a href="siswa.html" class="text-xs text-slate-400 hover:text-indigo-400 transition inline-flex items-center space-x-1">
+        <span>Buka Portal Anonim Siswa</span>
+        <span>&rarr;</span>
+      </a>
     </div>
+
   </div>
 
   <script>
     const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
 
-    // CHECK AUTO-LOGIN SAAT HALAMAN DILOAD
-    document.addEventListener('DOMContentLoaded', () => {
-      const existingRole = localStorage.getItem('meuratep_role');
-      const existingUser = localStorage.getItem('meuratep_anon_user');
-
-      // Jika perngkat sudah tersimpan ID siswa, alihkan otomatis ke siswa.html
-      if (existingRole === 'siswa' && existingUser) {
-        window.location.href = 'siswa.html';
-      }
-    });
-
-    function switchTab(tab) {
-      const btnSiswa = document.getElementById('tabSiswaBtn');
-      const btnHost = document.getElementById('tabHostBtn');
-      const secSiswa = document.getElementById('sectionSiswa');
-      const secHost = document.getElementById('sectionHost');
-
-      if (tab === 'siswa') {
-        btnSiswa.className = "py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 bg-indigo-600 text-white shadow";
-        btnHost.className = "py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-white";
-        secSiswa.classList.remove('hidden');
-        secHost.classList.add('hidden');
-      } else {
-        btnHost.className = "py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 bg-indigo-600 text-white shadow";
-        btnSiswa.className = "py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 text-slate-400 hover:text-white";
-        secHost.classList.remove('hidden');
-        secSiswa.classList.add('hidden');
-      }
-    }
-
-    function getOrCreateAnonUser() {
-      let username = localStorage.getItem('meuratep_anon_user');
-      if (!username) {
-        const randomCode = Math.floor(1000 + Math.random() * 9000);
-        username = `Siswa_#${randomCode}`;
-        localStorage.setItem('meuratep_anon_user', username);
-      }
-      return username;
-    }
-
-    function handleSiswaLogin() {
-      const anonUser = getOrCreateAnonUser();
-      document.getElementById('displayAnonUsername').innerText = anonUser;
-      
-      // Jika user belum memiliki role tersimpan, tampilkan modal intro
-      if (!localStorage.getItem('meuratep_role')) {
-        document.getElementById('introModal').classList.remove('hidden');
-      } else {
-        proceedToSiswaDashboard();
-      }
-    }
-
-    function proceedToSiswaDashboard() {
-      localStorage.setItem('meuratep_role', 'siswa');
-      window.location.href = 'siswa.html';
-    }
-
-    // AUTHENTIKASI & DYNAMIC REDIRECTION HOST
     async function handleHostLogin(e) {
       e.preventDefault();
       
@@ -205,10 +99,8 @@
             window.location.href = 'guru.html';
           } else if (userRole === 'developer') {
             window.location.href = 'developer.html';
-          } else if (userRole === 'siswa') {
-            window.location.href = 'siswa.html';
           } else {
-            errorDiv.innerText = "Role akun tidak valid.";
+            errorDiv.innerText = "Role akun tidak memiliki akses ke Dashboard Host.";
             errorDiv.classList.remove('hidden');
           }
         } else {
@@ -218,6 +110,7 @@
       } catch (err) {
         console.error(err);
 
+        // Fallback Auth Lokal jika webhook offline
         if (usernameInput === 'nibras' && passwordInput === '0') {
           localStorage.setItem('meuratep_guru_user', 'nibras');
           localStorage.setItem('meuratep_role', 'guru');
@@ -231,7 +124,7 @@
           errorDiv.classList.remove('hidden');
         }
       } finally {
-        btnText.innerText = "Login Host";
+        btnText.innerText = "Login Ke Dashboard";
         btnSpinner.classList.add('hidden');
         btnSubmit.disabled = false;
       }
