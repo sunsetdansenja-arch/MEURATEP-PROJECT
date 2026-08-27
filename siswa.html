@@ -74,6 +74,7 @@
 
     <!-- SEKTOR 2: KANAL CURHAT BK -->
     <section id="sectorCurhat" class="hidden space-y-6">
+      <!-- Form Kirim Curhat Privat -->
       <div class="bg-slate-800 border border-amber-500/30 rounded-2xl p-4 sm:p-6 space-y-4 shadow-lg">
         <div class="flex items-start space-x-3">
           <div class="p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-xl">
@@ -95,6 +96,17 @@
         <button onclick="sendCurhat()" id="btnSendCurhat" class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-amber-600/30">
           Kirim Curhat Ke Guru BK
         </button>
+      </div>
+
+      <!-- Riwayat Curhat Privat & Balasan Guru BK -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-amber-400 uppercase tracking-wider">Riwayat Curhat Kamu</h3>
+          <button onclick="loadMyCurhats()" class="text-xs text-amber-400 hover:underline">Refresh Curhat</button>
+        </div>
+        <div id="myCurhatContainer" class="space-y-4">
+          <div class="text-center py-6 text-slate-500 text-sm">Memuat riwayat curhat...</div>
+        </div>
       </div>
     </section>
 
@@ -127,15 +139,19 @@
         cBtn.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition";
         fSec.classList.remove('hidden');
         cSec.classList.add('hidden');
+        loadThreads();
       } else {
         cBtn.className = "pb-3 text-sm font-semibold border-b-2 border-amber-500 text-amber-400 transition";
         fBtn.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition";
         cSec.classList.remove('hidden');
         fSec.classList.add('hidden');
+        loadMyCurhats();
       }
     }
 
-    // Load Threads (Menggunakan action: 'read_thread')
+    // ==========================================
+    // SEKTOR 1: FORUM PUBLIK & REPLIES
+    // ==========================================
     async function loadThreads() {
       const container = document.getElementById('threadsContainer');
       container.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">Memuat thread...</div>';
@@ -147,10 +163,16 @@
           body: JSON.stringify({ action: 'read_thread' })
         });
         const resData = await response.json();
-        const payload = Array.isArray(resData) ? resData[0] : resData;
+        
+        let items = [];
+        if (Array.isArray(resData)) {
+          items = (resData[0] && resData[0].status === 'success' && Array.isArray(resData[0].data)) ? resData[0].data : resData;
+        } else if (resData && resData.status === 'success' && Array.isArray(resData.data)) {
+          items = resData.data;
+        }
 
-        if (payload && payload.status === 'success' && Array.isArray(payload.data)) {
-          renderThreads(payload.data);
+        if (Array.isArray(items) && items.length > 0) {
+          renderThreads(items);
         } else {
           container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Belum ada thread publik.</div>';
         }
@@ -160,12 +182,10 @@
       }
     }
 
-    // Render Hirarki Thread Utama & Reply berbasis anchor tipe `reply_[id]`
     function renderThreads(items) {
       const container = document.getElementById('threadsContainer');
       container.innerHTML = '';
 
-      // Main thread hanya yang bertipe 'thread' atau tidak punya prefix reply
       const mainThreads = items.filter(i => i.tipe === 'thread' || !i.tipe || !i.tipe.startsWith('reply_'));
 
       if (mainThreads.length === 0) {
@@ -174,13 +194,12 @@
       }
 
       mainThreads.forEach(thread => {
-        // Balasan disaring berdasarkan matching tipe: reply_[thread.id]
-        const childReplies = items.filter(i => i.tipe === `reply_${thread.id}`);
+        const threadId = String(thread.id || thread._id || '');
+        const childReplies = items.filter(i => i.tipe === `reply_${threadId}`);
         
         const card = document.createElement('div');
         card.className = "bg-slate-800 border border-slate-700/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm";
         card.innerHTML = `
-          <!-- Header Thread Utama -->
           <div class="flex items-center justify-between">
             <span class="text-xs font-mono text-indigo-400 font-semibold bg-indigo-950/60 border border-indigo-800/40 px-2.5 py-1 rounded-md">
               ${escapeHtml(thread.user || 'Anonim')}
@@ -188,34 +207,27 @@
             <span class="text-[11px] text-slate-500">${thread.createdAt ? new Date(thread.createdAt).toLocaleString('id-ID') : ''}</span>
           </div>
           
-          <!-- Isi Thread Utama -->
           <p class="text-sm text-slate-100 leading-relaxed whitespace-pre-line">${escapeHtml(thread.pesan || '')}</p>
           
-          <!-- Control Bar Tray -->
           <div class="pt-2 border-t border-slate-700/50 flex items-center justify-between">
-            <button onclick="toggleReplyTray('${thread.id}')" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              <span>💬 ${childReplies.length > 0 ? `Lihat Balasan (${childReplies.length})` : 'Tulis Balasan'}</span>
+            <button onclick="toggleTray('replyTray-${threadId}')" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition flex items-center space-x-1">
+              💬 <span>${childReplies.length > 0 ? `Lihat Balasan (${childReplies.length})` : 'Tulis Balasan'}</span>
             </button>
           </div>
 
-          <!-- Collapsible Dropdown Tray Balasan -->
-          <div id="replyTray-${thread.id}" class="hidden mt-3 pl-3 sm:pl-4 border-l-2 border-indigo-500/40 space-y-3 pt-2">
-            <!-- Form Input Balasan Instan -->
+          <!-- Dropdown Tray Balasan Forum -->
+          <div id="replyTray-${threadId}" class="hidden mt-3 pl-3 sm:pl-4 border-l-2 border-indigo-500/40 space-y-3 pt-2">
             <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-700 space-y-2">
-              <textarea id="replyText-${thread.id}" rows="2" placeholder="Tulis balasan anonim untuk thread ini..." 
+              <textarea id="replyText-${threadId}" rows="2" placeholder="Tulis balasan anonim..." 
                         class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"></textarea>
               <div class="flex justify-between items-center">
                 <span class="text-[10px] text-slate-500">Membalas @${escapeHtml(thread.user || 'Anonim')}</span>
-                <button onclick="postReply('${thread.id}')" id="btnReply-${thread.id}" class="py-1.5 px-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs transition">
+                <button onclick="postReply('${threadId}')" id="btnReply-${threadId}" class="py-1.5 px-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-xs transition">
                   Kirim Balasan
                 </button>
               </div>
             </div>
 
-            <!-- List Balasan Terurut -->
             ${childReplies.length > 0 ? `
               <div class="space-y-2">
                 ${childReplies.map(r => `
@@ -235,19 +247,13 @@
       });
     }
 
-    function toggleReplyTray(id) {
-      const tray = document.getElementById(`replyTray-${id}`);
-      if (tray) tray.classList.toggle('hidden');
-    }
-
-    // Kirim Thread Baru (action: 'write_thread')
     async function postThread() {
       const pesan = document.getElementById('newThreadPesan').value.trim();
       const btn = document.getElementById('btnPostThread');
       if (!pesan) return alert("Pesan tidak boleh kosong!");
 
       btn.disabled = true;
-      btn.innerText = "Sending...";
+      btn.innerText = "Mengirim...";
 
       try {
         await fetch(WEBHOOK_URL, {
@@ -270,7 +276,6 @@
       }
     }
 
-    // Kirim Balasan (action: 'write_thread' dengan tipe: 'reply_[parentId]')
     async function postReply(parentId) {
       const inputEl = document.getElementById(`replyText-${parentId}`);
       const btn = document.getElementById(`btnReply-${parentId}`);
@@ -279,7 +284,7 @@
       if (!pesan) return alert("Balasan tidak boleh kosong!");
 
       btn.disabled = true;
-      btn.innerText = "Sending...";
+      btn.innerText = "Mengirim...";
 
       try {
         await fetch(WEBHOOK_URL, {
@@ -294,8 +299,7 @@
         });
         inputEl.value = '';
         await loadThreads();
-        // Tray otomatis tetap terbuka setelah reload
-        toggleReplyTray(parentId);
+        toggleTray(`replyTray-${parentId}`);
       } catch (err) {
         alert("Gagal mempublikasikan balasan.");
       } finally {
@@ -304,7 +308,9 @@
       }
     }
 
-    // Kirim Curhat BK (action: 'write_curhat')
+    // ==========================================
+    // SEKTOR 2: KANAL CURHAT BK & REPLIES TRAY
+    // ==========================================
     async function sendCurhat() {
       const pesan = document.getElementById('curhatPesan').value.trim();
       const btn = document.getElementById('btnSendCurhat');
@@ -329,6 +335,7 @@
         document.getElementById('curhatPesan').value = '';
         alertDiv.innerText = "Pesan curhatmu telah terkirim secara rahasia ke Guru BK.";
         alertDiv.classList.remove('hidden');
+        loadMyCurhats();
       } catch (err) {
         alert("Gagal mengirim curhat.");
       } finally {
@@ -337,11 +344,152 @@
       }
     }
 
-    function escapeHtml(text) {
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    async function loadMyCurhats() {
+      const container = document.getElementById('myCurhatContainer');
+      container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Memuat riwayat curhat...</div>';
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'read_curhat',
+            user: currentUser,
+            role: 'siswa'
+          })
+        });
+        const resData = await response.json();
+
+        let items = [];
+        if (Array.isArray(resData)) {
+          items = (resData[0] && resData[0].status === 'success' && Array.isArray(resData[0].data)) ? resData[0].data : resData;
+        } else if (resData && resData.status === 'success' && Array.isArray(resData.data)) {
+          items = resData.data;
+        }
+
+        if (Array.isArray(items) && items.length > 0) {
+          renderMyCurhats(items);
+        } else {
+          container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Kamu belum pernah mengirim curhat privat.</div>';
+        }
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="text-center py-6 text-rose-400 text-sm">Gagal memuat riwayat curhat.</div>';
+      }
     }
 
-    // Load Pertama Kali
+    function renderMyCurhats(items) {
+      const container = document.getElementById('myCurhatContainer');
+      container.innerHTML = '';
+
+      // Curhat milik siswa ini (tipe 'curhat' atau tanpa prefix reply_)
+      const myCurhats = items.filter(i => (i.tipe === 'curhat' || !i.tipe || !i.tipe.startsWith('reply_')) && i.user === currentUser);
+
+      if (myCurhats.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Kamu belum pernah mengirim curhat privat.</div>';
+        return;
+      }
+
+      myCurhats.forEach(curhat => {
+        const curhatId = String(curhat.id || curhat._id || '');
+        // Mengambil semua balasan untuk curhat spesifik ini
+        const childReplies = items.filter(i => i.tipe === `reply_${curhatId}`);
+
+        const card = document.createElement('div');
+        card.className = "bg-slate-800 border border-amber-500/20 rounded-2xl p-4 sm:p-5 space-y-3 shadow-sm";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-amber-400 font-semibold bg-amber-950/60 border border-amber-800/40 px-2.5 py-1 rounded-md">
+              🔒 Curhat Saya (${escapeHtml(curhat.user)})
+            </span>
+            <span class="text-[11px] text-slate-500">${curhat.createdAt ? new Date(curhat.createdAt).toLocaleString('id-ID') : ''}</span>
+          </div>
+
+          <p class="text-sm text-slate-100 leading-relaxed whitespace-pre-line">${escapeHtml(curhat.pesan || '')}</p>
+
+          <div class="pt-2 border-t border-slate-700/50 flex items-center justify-between">
+            <button onclick="toggleTray('curhatReplyTray-${curhatId}')" class="text-xs font-semibold text-amber-400 hover:text-amber-300 transition flex items-center space-x-1">
+              💬 <span>${childReplies.length > 0 ? `Lihat Respon Guru BK (${childReplies.length})` : 'Balas / Respons'}</span>
+            </button>
+          </div>
+
+          <!-- Dropdown Tray Balasan Curhat Privat -->
+          <div id="curhatReplyTray-${curhatId}" class="hidden mt-3 pl-3 sm:pl-4 border-l-2 border-amber-500/40 space-y-3 pt-2">
+            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-700 space-y-2">
+              <textarea id="curhatReplyText-${curhatId}" rows="2" placeholder="Tulis pesan lanjutan untuk Guru BK..." 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"></textarea>
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] text-slate-500">Kirim balasan rahasia</span>
+                <button onclick="postCurhatReply('${curhatId}')" id="btnCurhatReply-${curhatId}" class="py-1.5 px-3.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg text-xs transition">
+                  Kirim Balasan
+                </button>
+              </div>
+            </div>
+
+            ${childReplies.length > 0 ? `
+              <div class="space-y-2">
+                ${childReplies.map(r => `
+                  <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 space-y-1">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[11px] font-mono ${r.user !== currentUser ? 'text-amber-300 font-bold' : 'text-slate-400 font-semibold'}">
+                        ${r.user !== currentUser ? '👨‍🏫 ' + escapeHtml(r.user || 'Guru BK') : '↪ Saya'}
+                      </span>
+                      <span class="text-[10px] text-slate-500">${r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID') : ''}</span>
+                    </div>
+                    <p class="text-xs text-slate-200 whitespace-pre-line">${escapeHtml(r.pesan || '')}</p>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '<div class="text-xs text-slate-500 italic py-1">Belum ada respon dari Guru BK pada pesan ini.</div>'}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function postCurhatReply(parentId) {
+      const inputEl = document.getElementById(`curhatReplyText-${parentId}`);
+      const btn = document.getElementById(`btnCurhatReply-${parentId}`);
+      const pesan = inputEl.value.trim();
+
+      if (!pesan) return alert("Balasan tidak boleh kosong!");
+
+      btn.disabled = true;
+      btn.innerText = "Mengirim...";
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'write_curhat',
+            user: currentUser,
+            pesan: pesan,
+            tipe: `reply_${parentId}`
+          })
+        });
+        inputEl.value = '';
+        await loadMyCurhats();
+        toggleTray(`curhatReplyTray-${parentId}`);
+      } catch (err) {
+        alert("Gagal mengirim balasan.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Kirim Balasan";
+      }
+    }
+
+    // Helper Utility Functions
+    function toggleTray(id) {
+      const tray = document.getElementById(id);
+      if (tray) tray.classList.toggle('hidden');
+    }
+
+    function escapeHtml(text) {
+      return String(text || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Load awal saat halaman dibuka
     loadThreads();
   </script>
 </body>
