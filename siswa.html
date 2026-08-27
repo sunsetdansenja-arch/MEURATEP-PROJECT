@@ -24,10 +24,10 @@
           <p class="text-xs text-slate-400">Portal Anonim Siswa</p>
         </div>
       </div>
-      <!-- User Info Badge & Logout -->
+      <!-- User Info Badge & Action Buttons -->
       <div class="flex items-center space-x-3">
         <span id="userBadge" class="bg-slate-900 border border-slate-700 text-indigo-400 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg"></span>
-        <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-400 transition">Keluar</button>
+        <button id="authBtn" onclick="handleAuthAction()" class="text-xs text-slate-400 hover:text-rose-400 transition">Keluar</button>
       </div>
     </div>
   </nav>
@@ -114,18 +114,60 @@
 
   <script>
     const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
+    
     let currentUser = localStorage.getItem('meuratep_anon_user');
+    let isLoggedIn = localStorage.getItem('meuratep_logged_in') === 'true';
 
+    // 1. Dapatkan atau Pertahankan ID Anonim yang Sama
     if (!currentUser) {
       currentUser = "Siswa_#" + Math.floor(1000 + Math.random() * 9000);
       localStorage.setItem('meuratep_anon_user', currentUser);
     }
-    document.getElementById('userBadge').innerText = currentUser;
+    
+    // Secara otomatis anggap logged_in jika user mengakses halaman siswa
+    if (!isLoggedIn) {
+      localStorage.setItem('meuratep_logged_in', 'true');
+      localStorage.setItem('meuratep_role', 'siswa');
+      isLoggedIn = true;
+    }
 
-    function logout() {
-      localStorage.removeItem('meuratep_anon_user');
-      localStorage.removeItem('meuratep_role');
-      window.location.href = 'index.html';
+    updateAuthUI();
+
+    function updateAuthUI() {
+      const userBadge = document.getElementById('userBadge');
+      const authBtn = document.getElementById('authBtn');
+
+      if (isLoggedIn) {
+        userBadge.innerText = currentUser;
+        userBadge.className = "bg-slate-900 border border-slate-700 text-indigo-400 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg";
+        authBtn.innerText = "Keluar (Logout)";
+        authBtn.className = "text-xs text-slate-400 hover:text-rose-400 transition cursor-pointer";
+      } else {
+        userBadge.innerText = "Tamu (Belum Login)";
+        userBadge.className = "bg-slate-900 border border-slate-700 text-slate-500 text-xs font-mono font-semibold px-3 py-1.5 rounded-lg";
+        authBtn.innerText = "Masuk (Login)";
+        authBtn.className = "text-xs text-emerald-400 font-semibold hover:text-emerald-300 transition cursor-pointer";
+      }
+    }
+
+    // 2. Logika Toggle Login / Logout
+    function handleAuthAction() {
+      if (isLoggedIn) {
+        // LOGOUT: Cukup hapus status login, ID anonim meuratep_anon_user TETAP DIPERTANAHKAN
+        localStorage.removeItem('meuratep_logged_in');
+        localStorage.removeItem('meuratep_role');
+        isLoggedIn = false;
+        alert("Kamu telah keluar. ID Anonim kamu (" + currentUser + ") tetap tersimpan di perangkat ini.");
+        updateAuthUI();
+      } else {
+        // LOGIN KEMBALI: Mengaktifkan kembali status login dengan ID anonim yang sama
+        localStorage.setItem('meuratep_logged_in', 'true');
+        localStorage.setItem('meuratep_role', 'siswa');
+        isLoggedIn = true;
+        alert("Selamat datang kembali sebagai " + currentUser);
+        updateAuthUI();
+        loadThreads();
+      }
     }
 
     function switchMainTab(tab) {
@@ -248,6 +290,7 @@
     }
 
     async function postThread() {
+      if (!isLoggedIn) return alert("Silakan Login terlebih dahulu untuk mengirim thread!");
       const pesan = document.getElementById('newThreadPesan').value.trim();
       const btn = document.getElementById('btnPostThread');
       if (!pesan) return alert("Pesan tidak boleh kosong!");
@@ -277,6 +320,7 @@
     }
 
     async function postReply(parentId) {
+      if (!isLoggedIn) return alert("Silakan Login terlebih dahulu untuk membalas!");
       const inputEl = document.getElementById(`replyText-${parentId}`);
       const btn = document.getElementById(`btnReply-${parentId}`);
       const pesan = inputEl.value.trim();
@@ -312,6 +356,7 @@
     // SEKTOR 2: KANAL CURHAT BK & REPLIES TRAY
     // ==========================================
     async function sendCurhat() {
+      if (!isLoggedIn) return alert("Silakan Login terlebih dahulu untuk mengirim curhat!");
       const pesan = document.getElementById('curhatPesan').value.trim();
       const btn = document.getElementById('btnSendCurhat');
       const alertDiv = document.getElementById('curhatAlert');
@@ -345,6 +390,11 @@
     }
 
     async function loadMyCurhats() {
+      if (!isLoggedIn) {
+        document.getElementById('myCurhatContainer').innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Silakan Login untuk melihat riwayat curhat kamu.</div>';
+        return;
+      }
+
       const container = document.getElementById('myCurhatContainer');
       container.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm">Memuat riwayat curhat...</div>';
 
@@ -382,7 +432,6 @@
       const container = document.getElementById('myCurhatContainer');
       container.innerHTML = '';
 
-      // Curhat milik siswa ini (tipe 'curhat' atau tanpa prefix reply_)
       const myCurhats = items.filter(i => (i.tipe === 'curhat' || !i.tipe || !i.tipe.startsWith('reply_')) && i.user === currentUser);
 
       if (myCurhats.length === 0) {
@@ -392,7 +441,6 @@
 
       myCurhats.forEach(curhat => {
         const curhatId = String(curhat.id || curhat._id || '');
-        // Mengambil semua balasan untuk curhat spesifik ini
         const childReplies = items.filter(i => i.tipe === `reply_${curhatId}`);
 
         const card = document.createElement('div');
@@ -448,6 +496,7 @@
     }
 
     async function postCurhatReply(parentId) {
+      if (!isLoggedIn) return alert("Silakan Login terlebih dahulu untuk membalas!");
       const inputEl = document.getElementById(`curhatReplyText-${parentId}`);
       const btn = document.getElementById(`btnCurhatReply-${parentId}`);
       const pesan = inputEl.value.trim();
