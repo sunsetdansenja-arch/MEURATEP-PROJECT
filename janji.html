@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar & Booking Janji Konseling - MEURATEP SMA 3</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+  <!-- Header Navigation -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+          BK
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-white leading-tight">Janji Konseling BK</h1>
+          <p class="text-xs text-slate-400">MEURATEP SMA 3 Banda Aceh</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3 text-xs">
+        <span id="userBadge" class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300">
+          User: <strong id="lblUsername" class="text-emerald-400">Memuat...</strong>
+        </span>
+        <a href="siswa.html" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg transition">
+          &larr; Kembali
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
+
+    <!-- Form Buat Janji Temu Baru -->
+    <section class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl">
+      <div class="flex items-center space-x-3 mb-6">
+        <div class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Buat Janji Temu Baru</h2>
+          <p class="text-xs text-slate-400">Pilih Guru BK dan tentukan waktu sesi konseling.</p>
+        </div>
+      </div>
+
+      <form id="formAturTemu" onsubmit="handleBuatJanji(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="space-y-1 sm:col-span-2 lg:col-span-1">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Guru BK Tujuan</label>
+          <select id="guruBk" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500 text-sm">
+            <option value="">-- Memuat Guru BK --</option>
+          </select>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Tanggal Pertemuan</label>
+          <input type="date" id="tglTemu" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500 text-sm">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Waktu / Jam</label>
+          <input type="time" id="jamTemu" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500 text-sm">
+        </div>
+
+        <div class="flex items-end">
+          <button type="submit" id="btnSubmitTemu" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 text-sm">
+            <span id="txtBtnTemu">Kirim Permohonan</span>
+            <div id="spnBtnTemu" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- Daftar Janji Konseling -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-white">Daftar Janji Konseling</h2>
+          <p class="text-xs text-slate-400">Riwayat dan status permohonan jadwal konseling.</p>
+        </div>
+        <button onclick="loadDaftarTemu()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-xl text-xs transition flex items-center space-x-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>Refresh Data</span>
+        </button>
+      </div>
+
+      <!-- Loading & Empty State -->
+      <div id="loadingState" class="py-12 text-center bg-slate-800/50 border border-slate-800 rounded-2xl">
+        <div class="inline-block w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <p class="text-sm text-slate-400">Mengambil data janji konseling & daftar guru...</p>
+      </div>
+
+      <div id="emptyState" class="hidden py-12 text-center bg-slate-800/50 border border-slate-800 rounded-2xl space-y-2">
+        <p class="text-slate-400 font-medium text-sm">Belum ada permohonan janji konseling.</p>
+        <p class="text-xs text-slate-500">Silakan gunakan form di atas untuk mengajukan janji konseling.</p>
+      </div>
+
+      <!-- Table Container -->
+      <div id="temuContainer" class="hidden overflow-x-auto bg-slate-800 border border-slate-700 rounded-2xl shadow-xl">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-900/60 border-b border-slate-700 text-slate-400 uppercase text-[11px] tracking-wider">
+              <th class="py-3.5 px-4">ID Siswa</th>
+              <th class="py-3.5 px-4">Guru BK</th>
+              <th class="py-3.5 px-4">Tanggal & Waktu</th>
+              <th class="py-3.5 px-4">Status</th>
+              <th class="py-3.5 px-4 text-right">Aksi BK / Host</th>
+            </tr>
+          </thead>
+          <tbody id="temuTableBody" class="divide-y divide-slate-700/60 text-slate-200">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Atur Ulang Waktu -->
+  <div id="modalReschedule" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+        <h3 class="font-bold text-white text-base">Atur Ulang Jadwal Konseling</h3>
+        <button onclick="closeModalReschedule()" class="text-slate-400 hover:text-white transition text-lg">&times;</button>
+      </div>
+
+      <form id="formReschedule" onsubmit="handleUpdateTemu(event)" class="space-y-4">
+        <input type="hidden" id="editTemuId">
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Tanggal Baru</label>
+          <input type="date" id="editTanggal" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500 text-sm">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Jam Baru</label>
+          <input type="time" id="editJam" required class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500 text-sm">
+        </div>
+
+        <div class="flex items-center space-x-3 pt-2">
+          <button type="button" onclick="closeModalReschedule()" class="w-1/2 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs font-semibold transition">
+            Batal
+          </button>
+          <button type="submit" id="btnSaveReschedule" class="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/30">
+            Simpan Jadwal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
+
+    let currentUser = localStorage.getItem('meuratep_guru_user') || localStorage.getItem('meuratep_siswa_user');
+    let currentRole = (localStorage.getItem('meuratep_role') || '').toLowerCase().trim();
+
+    if (!currentUser) {
+      currentUser = 'siswa_' + Math.random().toString(36).substring(2, 7);
+      localStorage.setItem('meuratep_siswa_user', currentUser);
+    }
+
+    document.getElementById('lblUsername').innerText = currentUser;
+    document.getElementById('tglTemu').valueAsDate = new Date();
+
+    document.addEventListener('DOMContentLoaded', loadDaftarTemu);
+
+    // 1. Buat Janji Baru (action: 'atur_temu')
+    async function handleBuatJanji(e) {
+      e.preventDefault();
+      
+      const guruBk = document.getElementById('guruBk').value;
+      const tanggal = document.getElementById('tglTemu').value;
+      const jam = document.getElementById('jamTemu').value;
+
+      if (!guruBk) {
+        alert("Pilih Guru BK tujuan terlebih dahulu.");
+        return;
+      }
+
+      const btnText = document.getElementById('txtBtnTemu');
+      const btnSpin = document.getElementById('spnBtnTemu');
+      const btn = document.getElementById('btnSubmitTemu');
+
+      btnText.innerText = "Mengirim...";
+      btnSpin.classList.remove('hidden');
+      btn.disabled = true;
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'atur_temu',
+            user: currentUser,
+            guru_bk: guruBk,
+            tanggal: tanggal,
+            jam: jam,
+            status: 'Menunggu'
+          })
+        });
+
+        if (response.ok) {
+          alert("Permohonan janji konseling berhasil dikirim!");
+          document.getElementById('formAturTemu').reset();
+          document.getElementById('tglTemu').valueAsDate = new Date();
+          loadDaftarTemu();
+        } else {
+          alert("Gagal mengirim permohonan.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Kesalahan koneksi ke server webhook.");
+      } finally {
+        btnText.innerText = "Kirim Permohonan";
+        btnSpin.classList.add('hidden');
+        btn.disabled = false;
+      }
+    }
+
+    // 2. Read Janji & Render Dynamic Guru BK (action: 'baca_temu')
+    async function loadDaftarTemu() {
+      const loading = document.getElementById('loadingState');
+      const empty = document.getElementById('emptyState');
+      const container = document.getElementById('temuContainer');
+      const tableBody = document.getElementById('temuTableBody');
+
+      loading.classList.remove('hidden');
+      empty.classList.add('hidden');
+      container.classList.add('hidden');
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'baca_temu',
+            user: currentUser,
+            role: currentRole
+          })
+        });
+
+        const result = await response.json();
+        const payload = Array.isArray(result) ? result[0] : result;
+        
+        // Populate Dynamic Dropdown Guru BK
+        const guruList = payload?.guru || payload?.list_guru || [];
+        populateGuruDropdown(guruList);
+
+        // Render Tabel Temu
+        const rawData = payload?.data || (Array.isArray(result) ? result : []);
+        loading.classList.add('hidden');
+
+        if (!Array.isArray(rawData) || rawData.length === 0) {
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        tableBody.innerHTML = '';
+        rawData.forEach((item) => {
+          const id = item.id || item._id || item.row_number || '';
+          const idSiswa = item.id_siswa || item.user || 'Anonim';
+          const guru = item.guru_bk || 'Guru BK';
+          const tgl = item.tanggal || '-';
+          const waktu = item.waktu || item.jam || '-';
+          const status = item.status || 'Menunggu';
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-700/30 transition';
+
+          tr.innerHTML = `
+            <td class="py-3.5 px-4 font-semibold text-slate-100">${escapeHtml(idSiswa)}</td>
+            <td class="py-3.5 px-4 text-slate-300">${escapeHtml(guru)}</td>
+            <td class="py-3.5 px-4 text-slate-300">${escapeHtml(tgl)} <span class="text-xs text-indigo-400 font-mono ml-1">(${escapeHtml(waktu)})</span></td>
+            <td class="py-3.5 px-4">${renderStatusBadge(status)}</td>
+            <td class="py-3.5 px-4 text-right space-x-2">
+              <button onclick="quickUpdateStatus('${id}', 'Approved', '${tgl}', '${waktu}')" class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/40 text-emerald-300 text-xs rounded-lg transition">
+                Setujui
+              </button>
+              <button onclick="openModalReschedule('${id}', '${tgl}', '${waktu}')" class="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 text-xs rounded-lg transition">
+                Atur Ulang
+              </button>
+            </td>
+          `;
+
+          tableBody.appendChild(tr);
+        });
+
+        container.classList.remove('hidden');
+
+      } catch (err) {
+        console.error(err);
+        loading.classList.add('hidden');
+        empty.classList.remove('hidden');
+        // Fallback Dropdown jika server offline
+        populateGuruDropdown(['nibras']);
+      }
+    }
+
+    function populateGuruDropdown(guruList) {
+      const selectGuru = document.getElementById('guruBk');
+      selectGuru.innerHTML = '';
+
+      let list = Array.isArray(guruList) && guruList.length > 0 ? guruList : ['nibras'];
+
+      list.forEach((g) => {
+        const guruName = typeof g === 'object' ? (g.user || g.username || 'nibras') : g;
+        const option = document.createElement('option');
+        option.value = guruName;
+        option.textContent = `Bu / Pak ${guruName.charAt(0).toUpperCase() + guruName.slice(1)} (Guru BK)`;
+        selectGuru.appendChild(option);
+      });
+    }
+
+    // 3. Update Status (action: 'update_temu')
+    async function quickUpdateStatus(id, newStatus, tgl, waktu) {
+      if (!confirm(`Ubah status janji konseling menjadi "${newStatus}"?`)) return;
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update_temu',
+            id: id,
+            status: newStatus,
+            tanggal: tgl,
+            jam: waktu
+          })
+        });
+
+        if (response.ok) {
+          loadDaftarTemu();
+        } else {
+          alert("Gagal memperbarui status.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan sistem saat update status.");
+      }
+    }
+
+    function openModalReschedule(id, tgl, waktu) {
+      document.getElementById('editTemuId').value = id;
+      document.getElementById('editTanggal').value = tgl !== '-' ? tgl : '';
+      document.getElementById('editJam').value = waktu !== '-' ? waktu : '';
+      document.getElementById('modalReschedule').classList.remove('hidden');
+    }
+
+    function closeModalReschedule() {
+      document.getElementById('modalReschedule').classList.add('hidden');
+    }
+
+    async function handleUpdateTemu(e) {
+      e.preventDefault();
+      const id = document.getElementById('editTemuId').value;
+      const newTgl = document.getElementById('editTanggal').value;
+      const newJam = document.getElementById('editJam').value;
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update_temu',
+            id: id,
+            status: 'Atur Ulang Waktu',
+            tanggal: newTgl,
+            jam: newJam
+          })
+        });
+
+        if (response.ok) {
+          closeModalReschedule();
+          loadDaftarTemu();
+        } else {
+          alert("Gagal memperbarui jadwal.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Gagal memperbarui jadwal.");
+      }
+    }
+
+    function renderStatusBadge(status) {
+      const st = (status || '').toLowerCase();
+      if (st.includes('approved') || st.includes('setuju')) {
+        return `<span class="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium rounded-full inline-flex items-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>Approved
+                </span>`;
+      } else if (st.includes('atur') || st.includes('ulang')) {
+        return `<span class="px-2.5 py-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-medium rounded-full inline-flex items-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mr-1.5"></span>Atur Ulang Waktu
+                </span>`;
+      } else if (st.includes('tolak')) {
+        return `<span class="px-2.5 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium rounded-full inline-flex items-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 mr-1.5"></span>Ditolak
+                </span>`;
+      } else {
+        return `<span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-medium rounded-full inline-flex items-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5"></span>Menunggu
+                </span>`;
+      }
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
