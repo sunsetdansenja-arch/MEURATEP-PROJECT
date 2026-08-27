@@ -108,6 +108,17 @@
   <script>
     const WEBHOOK_URL = "https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/1342a914-f61b-478e-891d-6f9e4f7b5124";
 
+    // CHECK AUTO-LOGIN SAAT HALAMAN DILOAD
+    document.addEventListener('DOMContentLoaded', () => {
+      const existingRole = localStorage.getItem('meuratep_role');
+      const existingUser = localStorage.getItem('meuratep_anon_user');
+
+      // Jika perngkat sudah tersimpan ID siswa, alihkan otomatis ke siswa.html
+      if (existingRole === 'siswa' && existingUser) {
+        window.location.href = 'siswa.html';
+      }
+    });
+
     function switchTab(tab) {
       const btnSiswa = document.getElementById('tabSiswaBtn');
       const btnHost = document.getElementById('tabHostBtn');
@@ -140,7 +151,13 @@
     function handleSiswaLogin() {
       const anonUser = getOrCreateAnonUser();
       document.getElementById('displayAnonUsername').innerText = anonUser;
-      document.getElementById('introModal').classList.remove('hidden');
+      
+      // Jika user belum memiliki role tersimpan, tampilkan modal intro
+      if (!localStorage.getItem('meuratep_role')) {
+        document.getElementById('introModal').classList.remove('hidden');
+      } else {
+        proceedToSiswaDashboard();
+      }
     }
 
     function proceedToSiswaDashboard() {
@@ -148,7 +165,7 @@
       window.location.href = 'siswa.html';
     }
 
-    // AUTHENTIKASI & DYNAMIC REDIRECTION
+    // AUTHENTIKASI & DYNAMIC REDIRECTION HOST
     async function handleHostLogin(e) {
       e.preventDefault();
       
@@ -170,7 +187,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'login',
-            user: usernameInput,       // Key dikirim sebagai "user"
+            user: usernameInput,
             password: passwordInput
           })
         });
@@ -181,11 +198,9 @@
         if (payload && payload.status === 'success') {
           const userRole = (payload.role || (payload.data && payload.data.role) || '').toLowerCase().trim();
           
-          // Simpan session
           localStorage.setItem('meuratep_guru_user', usernameInput);
           localStorage.setItem('meuratep_role', userRole);
 
-          // Routing berpatokan murni pada kolom "role"
           if (userRole === 'guru' || userRole === 'guru_bk') {
             window.location.href = 'guru.html';
           } else if (userRole === 'developer') {
@@ -203,7 +218,6 @@
       } catch (err) {
         console.error(err);
 
-        // Fallback Autentikasi berdasarkan Database Auth (nibras -> guru, masteruser -> developer)
         if (usernameInput === 'nibras' && passwordInput === '0') {
           localStorage.setItem('meuratep_guru_user', 'nibras');
           localStorage.setItem('meuratep_role', 'guru');
