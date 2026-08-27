@@ -178,7 +178,7 @@
       }
 
       mainCurhats.forEach(curhat => {
-        const curhatId = curhat.id || curhat._id;
+        const curhatId = String(curhat.id || curhat._id || '');
         const childReplies = items.filter(i => i.tipe === `reply_${curhatId}`);
 
         const card = document.createElement('div');
@@ -186,7 +186,7 @@
         card.innerHTML = `
           <div class="flex items-center justify-between">
             <span class="text-xs font-mono text-amber-400 font-semibold bg-amber-950/60 border border-amber-800/40 px-2.5 py-1 rounded-md">
-              👤 ${escapeHtml(curhat.user || 'Siswa Anonim')}
+              🔒 ${escapeHtml(curhat.user || 'Siswa Anonim')}
             </span>
             <span class="text-[11px] text-slate-500">${curhat.createdAt ? new Date(curhat.createdAt).toLocaleString('id-ID') : ''}</span>
           </div>
@@ -217,7 +217,7 @@
                 ${childReplies.map(r => `
                   <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 space-y-1">
                     <div class="flex items-center justify-between">
-                      <span class="text-[11px] font-mono text-amber-300 font-semibold">👨‍🏫 ${escapeHtml(r.user || currentGuruUser)} (Guru BK)</span>
+                      <span class="text-[11px] font-mono text-amber-300 font-semibold">↪ ${escapeHtml(r.user || currentGuruUser)} (Guru BK)</span>
                       <span class="text-[10px] text-slate-500">${r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID') : ''}</span>
                     </div>
                     <p class="text-xs text-slate-200 whitespace-pre-line">${escapeHtml(r.pesan || '')}</p>
@@ -315,7 +315,7 @@
       }
 
       mainThreads.forEach(thread => {
-        const threadId = thread.id || thread._id;
+        const threadId = String(thread.id || thread._id || '');
         const childReplies = items.filter(i => i.tipe === `reply_${threadId}`);
         
         const card = document.createElement('div');
